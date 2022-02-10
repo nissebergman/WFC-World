@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Wave Function Collapse - Bare Bones</title>
+  <link rel="stylesheet" href="./style.css">
+
+  	<script id="vertexShader2" type="x-shader/x-vertex">
+		precision highp float;
+
+		uniform float sineTime;
+
+		uniform mat4 modelViewMatrix;
+		uniform mat4 projectionMatrix;
+    uniform vec2 uv;
+
+		attribute vec3 position;
+		attribute vec3 offset;
+		attribute vec4 color;
+		attribute vec4 orientation;
+
+    varying vec2 vUv;
+		varying vec3 vPosition;
+		varying vec4 vColor;
+
+		void main(){
+
+      vUv = uv;
+			//vPosition = offset * max(abs(sineTime * 2.0 + 1.0), 0.5) + position + 20.5;
+      vPosition = offset * 3.0 + position + 20.5;
+
+      float displacementPower = 1.0 - cos(uv.y * 3.1416 / 2.0)* 5.0;
+      float displacement = sin( vPosition.y + sineTime * 10.0) * (0.1 * displacementPower);
+
+      vPosition.z += displacement;
+
+			vColor = color;
+
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( vPosition, 1.0 );
+
+		}
+
+	</script>
+
+	<script id="fragmentShader2" type="x-shader/x-fragment">
+
+		precision highp float;
+
+    varying vec2 vUv;
+		uniform float time;
+
+		varying vec3 vPosition;
+		varying vec4 vColor;
+
+		void main() {
+
+			vec3 baseColor = vec3(0.5, 1.0, .2);
+      float clarity = (vPosition.y * .1) + .5;
+
+			gl_FragColor = vec4(baseColor * clarity, 1.0);
+
+		}
+
+
+
+</script>
+
+  <script type="x-shader/x-vertex" id="vertexShader">
+    out vec2 vUv;
+    out vec3 vNormal;
+    out vec4 vPosition;
+    out vec3 vHeight;
+    uniform sampler2D canvasTexture;
+    uniform float time;
+    vec3 newPosition;
+    float pixelDistanceToGray;
+    float pixelDistanceToBlue;
+    uniform float offset;
+    float tangentFactor = 0.1;
+
+// Using the RSL-style periodic variant pnoise of ashimas webgl-noise
+
+// Author:  Stefan Gustavson (stefan.gustavson@liu.se)
+// Version: 2011-10-11
+//
+// Many thanks to Ian McEwan of Ashima Arts for the
+// ideas for permutation and gradient selection.
+//
+// Copyright (c) 2011 Stefan Gustavson. All rights reserved.
+// Distributed under the MIT license. See LICENSE file.
+// https://github.com/stegu/webgl-noise
+//
+
+vec3 mod289(vec3 x)
+{
+  return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec4 mod289(vec4 x)
+{
+  return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec4 permute(vec4 x)
+{
+  return mod289(((x*34.0)+1.0)*x);
+}
+
+vec4 taylorInvSqrt(vec4 r)
+{
+  return 1.79284291400159 - 0.85373472095314 * r;
+}
+
+vec3 fade(vec3 t) {
+  return t*t*t*(t*(t*6.0-15.0)+10.0);
+}
+
+
+// Classic Perlin noise, periodic variant
+float pnoise(vec3 P, vec3 rep)
+{
+  vec3 Pi0 = mod(floor(P), rep); // Integer part, modulo period
+  vec3 Pi1 = mod(Pi0 + vec3(1.0), rep); // Integer part + 1, mod period
+  Pi0 = mod289(Pi0);
+  Pi1 = mod289(Pi1);
+  vec3 Pf0 = fract(P); // Fractional part for interpolation
+  vec3 Pf1 = Pf0 - vec3(1.0); // Fractional part - 1.0
+  vec4 ix = vec4(Pi0.x, Pi1.x, Pi0.x, Pi1.x);
+  vec4 iy = vec4(Pi0.yy, Pi1.yy);
+  vec4 iz0 = Pi0.zzzz;
+  vec4 iz1 = Pi1.zzzz;
+
+  vec4 ixy = permute(permute(ix) + iy);
+  vec4 ixy0 = permute(ixy + iz0);
+  vec4 ixy1 = permute(ixy + iz1);
+
+  vec4 gx0 = ixy0 * (1.0 / 7.0);
+  vec4 gy0 = fract(floor(gx0) * (1.0 / 7.0)) - 0.5;
+  gx0 = fract(gx0);
+  vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
+  vec4 sz0 = step(gz0, vec4(0.0));
+  gx0 -= sz0 * (step(0.0, gx0) - 0.5);
+  gy0 -= sz0 * (step(0.0, gy0) - 0.5);
+
+  vec4 gx1 = ixy1 * (1.0 / 7.0);
+  vec4 gy1 = fract(floor(gx1) * (1.0 / 7.0)) - 0.5;
+  gx1 = fract(gx1);
+  vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
+  vec4 sz1 = step(gz1, vec4(0.0));
+  gx1 -= sz1 * (step(0.0, gx1) - 0.5);
+  gy1 -= sz1 * (step(0.0, gy1) - 0.5);
+
+  vec3 g000 = vec3(gx0.x,gy0.x,gz0.x);
+  vec3 g100 = vec3(gx0.y,gy0.y,gz0.y);
+  vec3 g010 = vec3(gx0.z,gy0.z,gz0.z);
+  vec3 g110 = vec3(gx0.w,gy0.w,gz0.w);
+  vec3 g001 = vec3(gx1.x,gy1.x,gz1.x);
+  vec3 g101 = vec3(gx1.y,gy1.y,gz1.y);
+  vec3 g011 = vec3(gx1.z,gy1.z,gz1.z);
+  vec3 g111 = vec3(gx1.w,gy1.w,gz1.w);
+
+  vec4 norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110)));
+  g000 *= norm0.x;
+  g010 *= norm0.y;
+  g100 *= norm0.z;
+  g110 *= norm0.w;
+  vec4 norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111)));
+  g001 *= norm1.x;
+  g011 *= norm1.y;
+  g101 *= norm1.z;
+  g111 *= norm1.w;
+
+  float n000 = dot(g000, Pf0);
+  float n100 = dot(g100, vec3(Pf1.x, Pf0.yz));
+  float n010 = dot(g010, vec3(Pf0.x, Pf1.y, Pf0.z));
+  float n110 = dot(g110, vec3(Pf1.xy, Pf0.z));
+  float n001 = dot(g001, vec3(Pf0.xy, Pf1.z));
+  float n101 = dot(g101, vec3(Pf1.x, Pf0.y, Pf1.z));
+  float n011 = dot(g011, vec3(Pf0.x, Pf1.yz));
+  float n111 = dot(g111, Pf1);
+
+  vec3 fade_xyz = fade(Pf0);
+  vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
+  vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
+  float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x);
+  return 2.2 * n_xyz;
+}
+
+
+varying float noise;
+
+float turbulence( vec3 p ) {
+    float w = 100.0;
+    float t = -.5;
+    for (float f = 1.0 ; f <= 10.0 ; f++ ){
+        float power = pow( 2.0, f );
+        t += abs( pnoise( vec3( power * p ), vec3( 10.0, 10.0, 10.0 ) ) / power );
+    }
+    return t;
+}
+
+vec3 generateHeight(vec2 inUv) {
+
+  noise = 10.0 *  -.10 * turbulence( .5 * normal );
+  float b = 2.0 * pnoise( 0.05 * position, vec3( 100.0 ) );
+  float displacement = abs(2. * noise + b);
+
+  pixelDistanceToGray = distance(texture2D(canvasTexture, inUv), vec4(.8, .8, .8, 1.0));
+  pixelDistanceToBlue = distance(texture2D(canvasTexture, inUv), vec4(.0, .0, 1.0, 1.0));
+  if(pixelDistanceToGray < .5 && (normal == vec3(0.0, 1.0, 0.0))){
+    // If mountain is on the edges of plane, set height to 1 to avoid clipping.
+    if ((inUv.x == 0.0) || (inUv.x == 1.0) || (inUv.y == 0.0) || (inUv.y == 1.0)){
+      newPosition = position;
+    } else{
+      //Else give mountain a height 
+      //vec3 newPosition = position + vNormal * displacement*-3.0;
+      float newHeight = clamp(pixelDistanceToGray, .1,1.0);
+      newPosition = position + normal * displacement*(1./newHeight);
+    }
+  }  
+  else{
+    //If not a mountain
+    if(pixelDistanceToBlue < .5 && (normal == vec3(0.0, 1.0, 0.0))){
+      if ((inUv.x == 0.0) || (inUv.x == 1.0) || (inUv.y == 0.0) || (inUv.y == 1.0)){
+        newPosition = position;
+      } else{
+        //Else give mountain a height 
+        //vec3 newPosition = position + vNormal * displacement*-3.0;
+        float newHeight = abs(sin(time * 3.14));
+        newPosition = position + normal * newHeight;
+      }
+    }
+    else newPosition = position;
+  }
+  return newPosition;
+}
+
+void main(){
+
+  vUv = uv;
+
+  // Generate height from uv data
+  vec3 newPosition = generateHeight(vUv);
+  vHeight = newPosition;
+  vNormal = normal;
+
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( generateHeight(vUv), 1.0 );
+  vPosition = gl_Position;
+
+}
+</script>
+  <script type="x-shader/x-vertex" id="fragmentShader">
+    in vec2 vUv;
+    in vec3 vNormal;
+    in vec4 vPosition;
+    in vec3 vHeight;
+    uniform float time;
+    uniform sampler2D canvasTexture;
+    uniform sampler2D grassTexture;
+    uniform sampler2D sandTexture;
+    uniform sampler2D seaTexture;
+    uniform sampler2D mountainTexture;
+
+    void main(){
+
+    // Calculate new normals from position data from vertex shader.
+    vec3 fdx = vec3(dFdx(vPosition.x),dFdx(vPosition.y),dFdx(vPosition.z));    
+    vec3 fdy = vec3(dFdy(vPosition.x),dFdy(vPosition.y),dFdy(vPosition.z));
+    vec3 N = normalize(cross(fdx,fdy));
+    vec3 color = vec3(1.0, 1.0, 1.0);
+
+    // Basic light
+    vec3 light = vec3(2, 2.0, 3.0);
+    light = normalize(light);
+
+    // Calculate the dot product of
+    // the light to the vertex normal
+    float dProd = max(0.0, dot(N, light));
+
+    // Just color the top surface of box
+    if(vNormal.y > 0.){
+      // If mountain
+      if((distance(texture2D(canvasTexture, vUv), vec4(.8, .8, .8, 1.0)) < .5) && (vHeight.y > 1.4)){
+        gl_FragColor =  texture2D(mountainTexture, vUv)*vec4(dProd/2.0, // R
+                        dProd/2.0, // G
+                        dProd/2.0, // B
+                        1.0);  // A
+
+      }
+      // If grass
+      else if (distance(texture2D(canvasTexture, vUv), vec4(.0, .5, .0, 1.0)) < .6){
+        gl_FragColor = texture2D(grassTexture, vUv);
+     }
+     // If sand
+      else if(distance(texture2D(canvasTexture, vUv), vec4(1.0, 1.0, .0, 1.0)) < .8){
+        gl_FragColor = texture2D(sandTexture, vUv);
+     }
+     // If sea
+      else if(distance(texture2D(canvasTexture, vUv), vec4(.0, .0, 1.0, 1.0)) < .9){
+        gl_FragColor = texture2D(seaTexture, (vUv + sin(time*3.14)/50.0));
+      }
+    //  Else color with canvastexture data, this is just for error spots.
+     else gl_FragColor = texture2D(canvasTexture, vUv);
+    }
+    // Color side of box with a lowtone red.
+    else gl_FragColor = vec4(.7 ,.2 ,.2, 1.0);
+    }
+  </script>
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div style="display:flex; align-items:flex-start;">
+	<table id="tbl"></table>
+	<div>
+		<pre style=" margin:0px 0px 0px 10px;">let rule_matrix = [
+  ['L','L','L','L'],
+  ['L','M','M','L'],
+  ['L','M','M','L'],
+  ['L','C','C','L'],
+  ['C','S','S','C'],
+  ['S','S','S','S'],
+  ['S','S','S','S'],
+];</pre>
+		<center style="margin-top:10px;">
+			<button onClick="Run()">Generate</button>
+		</center>
+	</div>
+</div>
+<canvas id="buffer-canvas"></canvas>
+<canvas hidden id="drawing-canvas"></canvas>
+<!-- partial -->
+  <script src="./three.js"></script>
+  <script src="./OrbitControls.js"></script>
+  <script src="./main.js"></script>
+</body>
+</html>
