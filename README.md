@@ -11,7 +11,7 @@ This is a project demonstrating the use of the constraint-based algorithm WFC wr
 
 ## **Sounds cool! How do I try this out?**
 
-Just clone this project, and run the *index.js*-file through some kind of local development server. (Live server for VSCode does wonders for me, but any will do fine.) Just beware that in it's current state, the application is slightly GPU-intensive.
+Just clone this project, and run the *index.html*-file through some kind of local development server. (Live server for VSCode does wonders for me, but any will do fine.) Just beware that in it's current state, the application is slightly GPU-intensive.
 
 ## **Credits**
 
