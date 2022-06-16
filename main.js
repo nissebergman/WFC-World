@@ -132,7 +132,6 @@ function find_entropy_cell( cells, tiles ){
 }
 
 // https://en.wiktionary.org/wiki/Shannon_entropy
-// Calculate some kind of probability based on a curve, I guess by what I've read.
 function shannon_entropy( cell, tiles ){
 	let c, weight,
 		total_weight		= 0,
@@ -544,21 +543,10 @@ function Run(){
 		pos;
 
 	do{
-		// 3. Find Min Entropy ( Find the cell with the least amount of tile weight );
-		// The less the weight, the faster it will collapse, so the idea is to get
-		// the easiest ones done first since they have less choices to pick from.
-		pos = find_entropy_cell( cells, info.tiles );
 
-		// 2. Collapse that Cell, Basicly means to just randomly pick
-		// a tile to use based on whats currently available for that cell.
+		pos = find_entropy_cell( cells, info.tiles );
 		collapse_cell( pos, cells, info.tiles );
 
-		// 3. Propagate, The cell we just collapsed, we need to now check all
-		// its neighbors to limit the choices of tiles based on the rules. Each cell,
-		// that has it's choices reduced gets added to a list to also check its neighbors
-		// Its kinda like, once cell got the coronoa, so now you need to check if the people
-		// around it has corona, if they have it, gotta check people around them too. If a
-		// cell did not get changed, it will not be added to the list, cause it doesn't have corona
 		propagate( pos, cells, info.tiles, info.rules );
 		passes++;
 	}while( !is_all_collapsed( cells ) && passes < PASS_LMT );

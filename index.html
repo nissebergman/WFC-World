@@ -309,28 +309,30 @@ void main(){
 </head>
 <body>
 <!-- partial:index.partial.html -->
-<div style="display:flex; align-items:flex-start;">
-	<table id="tbl"></table>
-	<div>
-		<pre style=" margin:0px 0px 0px 10px;">let rule_matrix = [
-  ['L','L','L','L'],
-  ['L','M','M','L'],
-  ['L','M','M','L'],
-  ['L','C','C','L'],
-  ['C','S','S','C'],
-  ['S','S','S','S'],
-  ['S','S','S','S'],
-];</pre>
-		<center style="margin-top:10px;">
-			<button onClick="Run()">Generate</button>
-		</center>
-	</div>
+<h1>HEJ</h1>
+<div class="rubbet">
+  <div>
+      <pre style=" margin:0px 0px 0px 10px;">Input = [
+    ['L','L','L','L'],
+    ['L','M','M','L'],
+    ['L','M','M','L'],
+    ['L','C','C','L'],
+    ['C','S','S','C'],
+    ['S','S','S','S'],
+    ['S','S','S','S'],
+  ];</pre>
+
+  </div>
+  <div>
+    <table id="tbl"></table>
+  </div>
+  
+  <canvas id="buffer-canvas"></canvas>
+  <canvas hidden id="drawing-canvas"></canvas>
+  <!-- partial -->
+    <script src="./three.js"></script>
+    <script src="./OrbitControls.js"></script>
+    <script src="./main.js"></script>
 </div>
-<canvas id="buffer-canvas"></canvas>
-<canvas hidden id="drawing-canvas"></canvas>
-<!-- partial -->
-  <script src="./three.js"></script>
-  <script src="./OrbitControls.js"></script>
-  <script src="./main.js"></script>
 </body>
 </html>

@@ -10,3 +10,23 @@ td{ width:35px; height:35px; text-align:center; border:1px solid #707070; }
 .TM{ background-color:gray; }
 .TERR{ background-color:red; }
 canvas{ border: 1px solid red }
+
+h1{
+	font-size: 5vw;
+	text-align: center;
+}
+
+pre {
+	text-align: center;
+}
+
+.rubbet {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 5vh;
+}
+
+canvas {
+	width: 45.5%;
+}
