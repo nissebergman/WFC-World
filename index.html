@@ -309,18 +309,23 @@ void main(){
 </head>
 <body>
 <!-- partial:index.partial.html -->
-<h1>HEJ</h1>
+<h1>WFC-World</h1>
 <div class="rubbet">
+
+<!-- Input Matrix hardcoded in HTML for formatting reasons. 
+The real input is defined in the JS by 'rule_matrix variable. -->
+  
   <div>
       <pre style=" margin:0px 0px 0px 10px;">Input = [
-    ['L','L','L','L'],
-    ['L','M','M','L'],
-    ['L','M','M','L'],
-    ['L','C','C','L'],
+    ['G','G','G','G'],
+    ['G','M','M','G'],
+    ['G','M','M','G'],
+    ['G','C','C','L'],
     ['C','S','S','C'],
     ['S','S','S','S'],
     ['S','S','S','S'],
   ];</pre>
+  
 
   </div>
   <div>
@@ -329,6 +334,7 @@ void main(){
   
   <canvas id="buffer-canvas"></canvas>
   <canvas hidden id="drawing-canvas"></canvas>
+  <canvas id="render"></canvas>
   <!-- partial -->
     <script src="./three.js"></script>
     <script src="./OrbitControls.js"></script>

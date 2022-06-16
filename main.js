@@ -460,11 +460,14 @@ function renderWFC( tbl, cells ){
 		// var material2 = new THREE.LineBasicMaterial( { color: 0x000000, transparent: true } );
 		// var wireframe = new THREE.LineSegments( geometry2, material2 );
 		// plane.add( wireframe );
-
-		renderer = new THREE.WebGLRenderer( { antialias: true } );
+		const renderCanvas = document.getElementById("render");
+		renderer = new THREE.WebGLRenderer({
+			antialias: true,
+			canvas: renderCanvas
+		});
 		renderer.setPixelRatio( window.devicePixelRatio );
-		renderer.setSize( cell_size * 10, cell_size * 10);
-		document.body.appendChild( renderer.domElement );
+		renderer.setSize( cell_size * 10 + 100, cell_size * 10 + 100);
+		//document.body.appendChild( renderer.domElement );
 
 		window.addEventListener( 'resize', onWindowResize );
 
@@ -537,6 +540,7 @@ let rule_matrix = [
 ];
 
 function Run(){
+
 	let info	= parse_matrix_rules( rule_matrix ),	// 1. Generate Tiles and Rules
 		cells	= gen_cell_matrix( info.tile_ary ),		// 2. Create Matrix with each Cell Filled with all Possible Tiles
 		passes	= 0,
